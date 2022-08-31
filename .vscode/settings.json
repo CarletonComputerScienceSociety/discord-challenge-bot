@@ -1,0 +1,12 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "db",
+      "group": "db",
+      "database": "${workspaceFolder:discord-challenge-platform}/test.db"
+    }
+  ],
+  "sqltools.useNodeRuntime": true
+}
