@@ -1,14 +1,10 @@
-
-use std::sync::atomic::{AtomicBool};
-
-
-
+use std::sync::atomic::AtomicBool;
 
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
 
-use serenity::model::gateway::{Ready};
-use serenity::model::id::{GuildId};
+use serenity::model::gateway::Ready;
+use serenity::model::id::GuildId;
 
 use serenity::model::prelude::command::CommandOptionType;
 use serenity::prelude::*;

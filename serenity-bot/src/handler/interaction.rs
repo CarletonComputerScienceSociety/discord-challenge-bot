@@ -1,16 +1,4 @@
-
-
-
-
-
-
-
 use serenity::model::application::interaction::Interaction;
-
-
-
-
-
 
 use serenity::prelude::*;
 

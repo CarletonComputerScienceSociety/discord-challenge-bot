@@ -1,13 +1,7 @@
 use std::env;
-use std::sync::atomic::{AtomicBool};
-
-
-
+use std::sync::atomic::AtomicBool;
 
 use handler::Handler;
-
-
-
 
 use serenity::prelude::*;
 use tracing::debug;

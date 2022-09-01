@@ -135,7 +135,11 @@ impl MigrationTrait for Migration {
                             .string()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(Submission::ParticipantId).integer().not_null())
+                    .col(
+                        ColumnDef::new(Submission::ParticipantId)
+                            .integer()
+                            .not_null(),
+                    )
                     // Create a foreign key to from submission to participant
                     .foreign_key(
                         ForeignKey::create()
