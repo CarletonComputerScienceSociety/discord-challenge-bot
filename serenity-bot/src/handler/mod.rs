@@ -6,8 +6,10 @@ use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 
-use serenity::model::prelude::command::CommandOptionType;
+
 use serenity::prelude::*;
+
+use strum_macros::{Display, EnumString, IntoStaticStr};
 use tracing::{error, info, trace};
 
 mod interaction;
@@ -17,6 +19,12 @@ pub struct Handler {
 }
 
 pub const VELOREN_SERVER_ID: u64 = 345993194322001923;
+
+#[derive(IntoStaticStr, EnumString, Display)]
+pub enum Command {
+    #[strum(serialize = "event-start")]
+    EventStart,
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -30,63 +38,13 @@ impl EventHandler for Handler {
         let name = ready.user.name;
         info!(?name, "is connected!");
 
-        // Create the review command for the Veloren server
-        if let Err(e) = GuildId(VELOREN_SERVER_ID)
-            .create_application_command(&context.http, |command| {
-                command
-                    .name("review")
-                    .description("Review an MR")
-                    .create_option(|option| {
-                        option
-                            .name("id")
-                            .description("The MR to review")
-                            .kind(CommandOptionType::Integer)
-                            .required(true)
-                    })
-            })
-            .await
-        {
-            error!(?e, "Error while creating the review command");
-        }
-
         if let Err(e) = GuildId(VELOREN_SERVER_ID)
             .set_application_commands(&context.http, |commands| {
-                commands
-                    // Command to create a thread in a channel and ping @Code
-                    // Reviewers. It requires the @Contributor role, and will
-                    // get the name of the MR from the Gitlab API.
-                    .create_application_command(|command| {
-                        command
-                            .name("review")
-                            .description("Create a thread in this channel and ping @Code Reviewers. Requires the @Contributor role.")
-                            .create_option(|option| {
-                                option
-                                    .name("id")
-                                    .description("The MR number to review")
-                                    .kind(CommandOptionType::Integer)
-                                    .required(true)
-                            })
-                    })
-                    // Approve (or revoke) command to get the bot to comment on
-                    // an MR. Requires the @Contributor role.
-                    .create_application_command(|command| {
-                        command
-                            .name("approve")
-                            .description("Add an approval comment to an MR. Requires the @Contributor role.")
-                            .create_option(|option| {
-                                option
-                                    .name("id")
-                                    .description("The MR number to approve")
-                                    .kind(CommandOptionType::Integer)
-                                    .required(true)
-                            })
-                    })
-                    // Get the current Git version that labbot is running on
-                    .create_application_command(|command| {
-                        command
-                            .name("labbot-version")
-                            .description("Check the Git commit that labbot is on")
-                    })
+                commands.create_application_command(|command| {
+                    command
+                        .name(Command::EventStart)
+                        .description("Start a challenge event")
+                })
             })
             .await
         {

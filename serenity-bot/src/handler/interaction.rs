@@ -2,13 +2,10 @@ use serenity::model::application::interaction::Interaction;
 
 use serenity::prelude::*;
 
+use std::str::FromStr;
 use tracing::warn;
 
-use super::Handler;
-
-const REVIEW_STRING: &str = "review";
-const APPROVE_STRING: &str = "approve";
-const VERSION_STRING: &str = "labbot-version";
+use super::{Command, Handler};
 
 impl Handler {
     pub async fn interaction_create2(
@@ -27,18 +24,8 @@ impl Handler {
             warn!("Error getting channel: {:?}", e);
         };
 
-        match &slash_command.data.name[..] {
-            REVIEW_STRING => {
-                let _merge_request_number = slash_command
-                    .data
-                    .options
-                    .get(0)
-                    .expect("Expected int option")
-                    .resolved
-                    .as_ref()
-                    .expect("Expected int object");
-            }
-            APPROVE_STRING => {
+        match Command::from_str(&slash_command.data.name[..])? {
+            Command::EventStart => {
                 let _merge_request_number = slash_command
                     .data
                     .options
