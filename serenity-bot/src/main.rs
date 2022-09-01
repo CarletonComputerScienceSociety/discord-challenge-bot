@@ -1,5 +1,4 @@
-use std::env;
-use std::sync::atomic::AtomicBool;
+use std::{env, sync::atomic::AtomicBool};
 
 use handler::Handler;
 

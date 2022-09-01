@@ -1,24 +1,31 @@
 use entity::entities::event;
 use log::warn;
-use migration::sea_orm::ActiveModelTrait;
-use migration::sea_orm::DatabaseConnection;
-use migration::sea_orm::Set;
-use serenity::builder::CreateActionRow;
-use serenity::builder::CreateButton;
+use migration::sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
+use serenity::builder::{CreateActionRow, CreateButton};
 
-use serenity::model::prelude::component::ButtonStyle;
-use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
-use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::interaction::InteractionResponseType;
-use serenity::model::prelude::ChannelType;
-use serenity::prelude::Context;
+use serenity::{
+    model::prelude::{
+        component::ButtonStyle,
+        interaction::{
+            application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
+            InteractionResponseType,
+        },
+        ChannelType,
+    },
+    prelude::Context,
+};
 
-use std::str::FromStr;
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use super::Command;
 
 pub struct ApplicationCommandHandler;
+
+#[derive(Serialize, Deseri)]
+struct EventJoin {
+    pub event_id: u64,
+    pub user_id: u64,
+}
 
 pub async fn handle_event_start_command(
     application_command_interaction: ApplicationCommandInteraction,
@@ -40,15 +47,18 @@ pub async fn handle_event_start_command(
             return Ok(());
         }
     };
+
     let guild = context
         .http
         .get_guild(application_command_interaction.guild_id.unwrap().0)
         .await?;
+
     let category = guild
         .create_channel(&context.http, |c| {
             c.name(event_name).kind(ChannelType::Category)
         })
         .await?;
+
     let channel = guild
         .create_channel(&context.http, |c| {
             c.name("rules")
@@ -58,6 +68,8 @@ pub async fn handle_event_start_command(
                 .category(category.id)
         })
         .await?;
+
+    // Create a join button for the event
     let join_button = channel
         .send_message(&context.http, |m| {
             m.content("Join the event").components(|c| {
@@ -75,6 +87,8 @@ pub async fn handle_event_start_command(
             })
         })
         .await?;
+
+    // Create the event for the database
     let event = event::ActiveModel {
         discord_server_id: Set(application_command_interaction
             .guild_id
@@ -87,12 +101,17 @@ pub async fn handle_event_start_command(
         name: Set(event_name.to_string()),
         ..Default::default()
     };
+
+    // Insert the event into the database
     event.insert(database.as_ref()).await?;
+
+    // Respond to the interaction
     application_command_interaction
         .create_interaction_response(&context.http, |r| {
             r.kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|d| d.content("Event created!").ephemeral(true))
         })
         .await?;
+
     Ok(())
 }

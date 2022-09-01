@@ -1,11 +1,10 @@
 use log::warn;
-use serenity::model::application::interaction::Interaction;
-use serenity::prelude::*;
+use serenity::{model::application::interaction::Interaction, prelude::*};
 
-
-use super::application_command::ApplicationCommandHandler;
-use super::message_component::MessageComponentHandler;
-use super::{Command, Handler};
+use super::{
+    application_command::ApplicationCommandHandler, message_component::MessageComponentHandler,
+    Command, Handler,
+};
 
 pub trait InteractionHandler {
     fn handle_command(

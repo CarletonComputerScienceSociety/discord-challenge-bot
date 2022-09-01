@@ -2,11 +2,12 @@ use std::sync::atomic::AtomicBool;
 
 use log::{error, info, trace};
 use migration::sea_orm::DatabaseConnection;
-use serenity::model::application::interaction::Interaction;
-use serenity::{async_trait, model::prelude::command::CommandOptionType};
+use serenity::{
+    async_trait,
+    model::{application::interaction::Interaction, prelude::command::CommandOptionType},
+};
 
-use serenity::model::gateway::Ready;
-use serenity::model::id::GuildId;
+use serenity::model::{gateway::Ready, id::GuildId};
 use std::sync::Arc;
 
 use serenity::prelude::*;
