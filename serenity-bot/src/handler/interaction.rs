@@ -1,4 +1,5 @@
 use log::warn;
+use serde::{Deserialize, Serialize};
 use serenity::{model::application::interaction::Interaction, prelude::*};
 
 use super::{
@@ -12,6 +13,11 @@ pub trait InteractionHandler {
         command: Command,
         args: Vec<String>,
     ) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum InteractionCustomId {
+    StartEvent { event_id: u64 },
 }
 
 impl Handler {
@@ -32,11 +38,12 @@ impl Handler {
                 .await?;
             }
             Interaction::MessageComponent(message_component) => {
-                MessageComponentHandler::handle_command(
+                MessageComponentHandler {
                     context,
-                    message_component,
-                    self.database.clone(),
-                )
+                    message_component_interaction: message_component,
+                    database: self.database.clone(),
+                }
+                .handle_command()
                 .await?
             }
             _ => {
