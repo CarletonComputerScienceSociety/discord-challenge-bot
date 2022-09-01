@@ -1,14 +1,17 @@
 use std::env;
 use std::sync::atomic::AtomicBool;
 
+use button_handler::CustomHandler;
 use handler::Handler;
 
 use migration::sea_orm::{Database, DatabaseConnection};
 use serenity::prelude::*;
 use tracing::debug;
 
+use std::sync::Arc;
 use tracing_subscriber::EnvFilter;
 
+mod button_handler;
 mod handler;
 
 const LABBOT_ID: u64 = 451862707746897961;
@@ -58,6 +61,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Connect to the database
     let db: DatabaseConnection = Database::connect("sqlite://test.db").await?;
 
+    let db_arc: Arc<DatabaseConnection> = Arc::new(db);
+
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::GUILDS
@@ -65,8 +70,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut client = Client::builder(&token, intents)
         .event_handler(Handler {
-            database: db,
+            database: db_arc.clone(),
             is_loop_running: AtomicBool::new(false),
+        })
+        .event_handler(CustomHandler {
+            database: db_arc.clone(),
         })
         .await
         .expect("Error creating client");

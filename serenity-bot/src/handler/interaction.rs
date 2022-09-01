@@ -83,7 +83,7 @@ impl Handler {
                 };
 
                 // Save the event to the database
-                event.insert(&self.database).await?;
+                event.insert(self.database.as_ref()).await?;
 
                 // TODO:
                 // - Store each participant that wants to join

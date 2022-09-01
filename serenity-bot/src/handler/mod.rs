@@ -6,6 +6,7 @@ use serenity::{async_trait, model::prelude::command::CommandOptionType};
 
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
+use std::sync::Arc;
 
 use serenity::prelude::*;
 
@@ -15,7 +16,7 @@ use tracing::{error, info, trace};
 mod interaction;
 
 pub struct Handler {
-    pub database: DatabaseConnection,
+    pub database: Arc<DatabaseConnection>,
     pub is_loop_running: AtomicBool,
 }
 
