@@ -12,6 +12,7 @@ pub struct Model {
     pub discord_category_id: String,
     pub discord_main_channel_id: String,
     pub name: String,
+    pub discord_event_join_button_id: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

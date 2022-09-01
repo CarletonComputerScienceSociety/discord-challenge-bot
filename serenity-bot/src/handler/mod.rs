@@ -31,7 +31,7 @@ pub enum Command {
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, context: Context, interaction: Interaction) {
-        if let Err(e) = self.interaction_create2(context, interaction).await {
+        if let Err(e) = self.interaction_create(context, interaction).await {
             error!(?e, "Error while processing message");
         }
     }

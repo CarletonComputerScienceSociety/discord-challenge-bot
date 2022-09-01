@@ -10,6 +10,7 @@ enum Event {
     DiscordServerId,
     DiscordCategoryId,
     DiscordMainChannelId,
+    DiscordEventJoinButtonId,
     Name,
 }
 
@@ -67,6 +68,11 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(ColumnDef::new(Event::Name).string().not_null())
+                    .col(
+                        ColumnDef::new(Event::DiscordEventJoinButtonId)
+                            .string()
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await?;

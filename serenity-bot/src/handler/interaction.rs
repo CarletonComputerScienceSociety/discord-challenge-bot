@@ -14,7 +14,7 @@ use tracing::warn;
 use super::{Command, Handler};
 
 impl Handler {
-    pub async fn interaction_create2(
+    pub async fn interaction_create(
         &self,
         context: Context,
         interaction: Interaction,
@@ -73,18 +73,6 @@ impl Handler {
                     })
                     .await?;
 
-                // Add the event to the database
-                let event = event::ActiveModel {
-                    discord_server_id: Set(slash_command.guild_id.unwrap().0.to_string()),
-                    discord_category_id: Set(category.id.0.to_string()),
-                    discord_main_channel_id: Set(channel.id.0.to_string()),
-                    name: Set(event_name.to_string()),
-                    ..Default::default()
-                };
-
-                // Save the event to the database
-                event.insert(self.database.as_ref()).await?;
-
                 // TODO:
                 // - Store each participant that wants to join
 
@@ -104,6 +92,26 @@ impl Handler {
                                     .to_owned(),
                             )
                         })
+                    })
+                    .await?;
+
+                // Add the event to the database
+                let event = event::ActiveModel {
+                    discord_server_id: Set(slash_command.guild_id.unwrap().0.to_string()),
+                    discord_category_id: Set(category.id.0.to_string()),
+                    discord_main_channel_id: Set(channel.id.0.to_string()),
+                    discord_event_join_button_id: Set(join_button.id.0.to_string()),
+                    name: Set(event_name.to_string()),
+                    ..Default::default()
+                };
+
+                // Save the event to the database
+                event.insert(self.database.as_ref()).await?;
+
+                // Respond that the event has been created
+                slash_command
+                    .create_interaction_response(&context.http, |r| {
+                        r.interaction_response_data(|d| d.title("Event created!").ephemeral(true))
                     })
                     .await?;
             }
