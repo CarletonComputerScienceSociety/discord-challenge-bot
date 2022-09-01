@@ -10,10 +10,19 @@ pub struct Model {
     pub id: i32,
     pub discord_id: String,
     pub team_id: i32,
+    pub event_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::event::Entity",
+        from = "Column::EventId",
+        to = "super::event::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    Event,
     #[sea_orm(
         belongs_to = "super::team::Entity",
         from = "Column::TeamId",
@@ -24,6 +33,12 @@ pub enum Relation {
     Team,
     #[sea_orm(has_many = "super::submission::Entity")]
     Submission,
+}
+
+impl Related<super::event::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Event.def()
+    }
 }
 
 impl Related<super::team::Entity> for Entity {

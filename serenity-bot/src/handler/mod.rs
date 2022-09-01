@@ -1,8 +1,8 @@
 use std::sync::atomic::AtomicBool;
 
 use migration::sea_orm::DatabaseConnection;
-use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
+use serenity::{async_trait, model::prelude::command::CommandOptionType};
 
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
@@ -41,10 +41,19 @@ impl EventHandler for Handler {
 
         if let Err(e) = GuildId(VELOREN_SERVER_ID)
             .set_application_commands(&context.http, |commands| {
+                // Start event command
                 commands.create_application_command(|command| {
                     command
                         .name(Command::EventStart)
                         .description("Start a challenge event")
+                        .create_option(|option| {
+                            // Option to get name of event
+                            option
+                                .name("event-start")
+                                .description("Start a challenge event")
+                                .kind(CommandOptionType::String)
+                                .required(true)
+                        })
                 })
             })
             .await

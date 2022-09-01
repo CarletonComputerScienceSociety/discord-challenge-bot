@@ -1,6 +1,11 @@
 use entity::entities::event;
 use migration::sea_orm::ActiveModelTrait;
 use migration::sea_orm::Set;
+use serenity::builder::CreateActionRow;
+use serenity::builder::CreateButton;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::component::ButtonStyle;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
 use serenity::model::{application::interaction::Interaction, prelude::ChannelType};
 use serenity::prelude::*;
 use std::str::FromStr;
@@ -27,6 +32,23 @@ impl Handler {
 
         match Command::from_str(&slash_command.data.name[..])? {
             Command::EventStart => {
+                // Get the event name from the command
+                let event_name = match slash_command
+                    .data
+                    .options
+                    .get(0)
+                    .expect("No event name provided")
+                    .resolved
+                    .as_ref()
+                    .expect("No event name provided")
+                {
+                    CommandDataOptionValue::String(s) => s,
+                    _ => {
+                        warn!("Invalid event name");
+                        return Ok(());
+                    }
+                };
+
                 // Get the guild
                 let guild = context
                     .http
@@ -40,18 +62,8 @@ impl Handler {
                     })
                     .await?;
 
-                // Add the event to the database
-                let event = event::ActiveModel {
-                    discord_server_id: Set(slash_command.guild_id.unwrap().0.to_string()),
-                    discord_category_id: Set(category.id.0.to_string()),
-                    ..Default::default()
-                };
-
-                // Save the event to the database
-                event.insert(&self.database).await?;
-
                 // Create a text channel for the event
-                let _channel = guild
+                let channel = guild
                     .create_channel(&context.http, |c| {
                         c.name("event")
                             .kind(ChannelType::Text)
@@ -61,12 +73,39 @@ impl Handler {
                     })
                     .await?;
 
-                // Todo
-                // - Store the event name
-                // - Store the main channel
+                // Add the event to the database
+                let event = event::ActiveModel {
+                    discord_server_id: Set(slash_command.guild_id.unwrap().0.to_string()),
+                    discord_category_id: Set(category.id.0.to_string()),
+                    discord_main_channel_id: Set(channel.id.0.to_string()),
+                    name: Set(event_name.to_string()),
+                    ..Default::default()
+                };
+
+                // Save the event to the database
+                event.insert(&self.database).await?;
+
+                // TODO:
                 // - Store each participant that wants to join
 
                 // Add a button to join the event
+                let join_button = channel
+                    .send_message(&context.http, |m| {
+                        m.content("Join the event").components(|c| {
+                            c.add_action_row(
+                                CreateActionRow::default()
+                                    .add_button(
+                                        CreateButton::default()
+                                            .custom_id(uuid::Uuid::new_v4().simple().to_string())
+                                            .label("Join")
+                                            .style(ButtonStyle::Primary)
+                                            .to_owned(),
+                                    )
+                                    .to_owned(),
+                            )
+                        })
+                    })
+                    .await?;
             }
         }
 

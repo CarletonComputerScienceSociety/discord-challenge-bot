@@ -9,6 +9,8 @@ enum Event {
     Id,
     DiscordServerId,
     DiscordCategoryId,
+    DiscordMainChannelId,
+    Name,
 }
 
 #[derive(Iden)]
@@ -25,6 +27,7 @@ enum Participant {
     Id,
     DiscordId,
     TeamId,
+    EventId,
 }
 
 #[derive(Iden)]
@@ -37,6 +40,7 @@ enum Submission {
 
 const FK_TEAM_EVENT: &str = "fk_team_event";
 const FK_PARTICIPANT_TEAM: &str = "fk_participant_team";
+const FK_PARTICIPANT_EVENT: &str = "fk_participant_event";
 const FK_SUBMISSION_PARTICIPANT: &str = "fk_submission_participant";
 
 #[async_trait::async_trait]
@@ -57,6 +61,12 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Event::DiscordServerId).string().not_null())
                     .col(ColumnDef::new(Event::DiscordCategoryId).string().not_null())
+                    .col(
+                        ColumnDef::new(Event::DiscordMainChannelId)
+                            .string()
+                            .not_null(),
+                    )
+                    .col(ColumnDef::new(Event::Name).string().not_null())
                     .to_owned(),
             )
             .await?;
@@ -104,12 +114,22 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Participant::DiscordId).string().not_null())
                     .col(ColumnDef::new(Participant::TeamId).integer().not_null())
+                    .col(ColumnDef::new(Participant::EventId).integer().not_null())
                     // Create a foreign key to from participant to team
                     .foreign_key(
                         ForeignKey::create()
                             .name(FK_PARTICIPANT_TEAM)
                             .from(Participant::Table, Participant::TeamId)
                             .to(Team::Table, Team::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
+                    )
+                    // Create a foreign key to from participant to event
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name(FK_PARTICIPANT_EVENT)
+                            .from(Participant::Table, Participant::EventId)
+                            .to(Event::Table, Event::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
@@ -182,6 +202,16 @@ impl MigrationTrait for Migration {
             .drop_foreign_key(
                 ForeignKey::drop()
                     .name(FK_PARTICIPANT_TEAM)
+                    .table(Participant::Table)
+                    .to_owned(),
+            )
+            .await?;
+
+        // Drop the foreign key from participant to event
+        manager
+            .drop_foreign_key(
+                ForeignKey::drop()
+                    .name(FK_PARTICIPANT_EVENT)
                     .table(Participant::Table)
                     .to_owned(),
             )

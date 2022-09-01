@@ -27,6 +27,7 @@ classDiagram
 
   Event "1" --o "0..n" Team
   Team "1" --o "0..n" Participant
+  Event "0..n" o--o "0..n" Participant
   Participant "1" --o "0..n" Submission
 ```
 
