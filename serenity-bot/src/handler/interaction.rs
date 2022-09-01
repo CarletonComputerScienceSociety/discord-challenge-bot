@@ -5,15 +5,25 @@ use std::time::Duration;
 
 use chrono::offset::Utc;
 use serenity::async_trait;
+use serenity::model::application::interaction::Interaction;
 use serenity::model::channel::Message;
 use serenity::model::gateway::{Activity, Ready};
 use serenity::model::id::{ChannelId, GuildId};
-use serenity::model::prelude::Interaction;
 use serenity::model::prelude::application_command::ApplicationCommandInteractionDataOptionValue;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
+use serenity::model::prelude::interaction::InteractionResponseType;
 use serenity::prelude::*;
+use serenity::utils::MessageBuilder;
+use tracing::warn;
+
+use super::Handler;
+
+const REVIEW_STRING: &str = "review";
+const APPROVE_STRING: &str = "approve";
+const VERSION_STRING: &str = "labbot-version";
 
 impl Handler {
-    async fn interaction_create(
+    pub async fn interaction_create2(
         &self,
         context: Context,
         interaction: Interaction,
@@ -39,16 +49,6 @@ impl Handler {
                     .resolved
                     .as_ref()
                     .expect("Expected int object");
-
-                if let CommandDataOptionValue::Integer(number) =
-                    merge_request_number
-                {
-                    self.open_discord_mr_thread(context, slash_command.clone(), *number as i64)
-                        .await?
-                } else {
-                    warn!("Merge request isn't a number");
-                    return Ok(());
-                }
             }
             APPROVE_STRING => {
                 let merge_request_number = slash_command
@@ -59,36 +59,6 @@ impl Handler {
                     .resolved
                     .as_ref()
                     .expect("Expected int object");
-
-                if let CommandDataOptionValue::Integer(number) =
-                    merge_request_number
-                {
-                    self.approve_mr(context, slash_command.clone(), *number as i64)
-                        .await?
-                } else {
-                    warn!("Merge request isn't a number");
-                    return Ok(());
-                }
-            }
-            VERSION_STRING => {
-                slash_command
-                    .create_interaction_response(&context.http, |response| {
-                        response
-                            .kind(InteractionResponseType::ChannelMessageWithSource)
-                            .interaction_response_data(|message| {
-                                message.content(
-                                    MessageBuilder::new()
-                                        // This will show an error with
-                                        // rust-analyzer, but it compiles just fine
-                                        // https://github.com/rust-analyzer/rust-analyzer/issues/6835
-                                        //
-                                        // Example output: `git:efe04ac-modified`
-                                        .push(git_version!(prefix = "git:", fallback = "unknown"))
-                                        .build(),
-                                )
-                            })
-                    })
-                    .await?;
             }
             _ => {
                 warn!("should not happen");

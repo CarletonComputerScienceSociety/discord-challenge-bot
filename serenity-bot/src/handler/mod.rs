@@ -5,22 +5,29 @@ use std::time::Duration;
 
 use chrono::offset::Utc;
 use serenity::async_trait;
+use serenity::model::application::interaction::Interaction;
 use serenity::model::channel::Message;
 use serenity::model::gateway::{Activity, Ready};
 use serenity::model::id::{ChannelId, GuildId};
-use serenity::model::prelude::Interaction;
-use serenity::model::prelude::application_command::{ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType};
+use serenity::model::prelude::application_command::{
+    ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType,
+};
+use serenity::model::prelude::command::CommandOptionType;
 use serenity::prelude::*;
 use tracing::{error, info, trace};
 
+mod interaction;
+
 pub struct Handler {
-    is_loop_running: AtomicBool,
+    pub is_loop_running: AtomicBool,
 }
+
+pub const VELOREN_SERVER_ID: u64 = 345993194322001923;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, context: Context, interaction: Interaction) {
-        if let Err(e) = self.interaction_create(context, interaction).await {
+        if let Err(e) = self.interaction_create2(context, interaction).await {
             error!(?e, "Error while processing message");
         }
     }
