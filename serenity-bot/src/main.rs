@@ -10,20 +10,54 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::{Activity, Ready};
 use serenity::model::id::{ChannelId, GuildId};
 use serenity::prelude::*;
+use tracing::debug;
+use tracing::log::Level;
+use tracing_subscriber::EnvFilter;
 
 mod handler;
 
+const LABBOT_ID: u64 = 451862707746897961;
 
+fn init_tracing() {
+    let append_info = |mut f: EnvFilter, list: &[&str], level: &str| {
+        for l in list {
+            f = f.add_directive(format!("{}={}", l, level).parse().unwrap());
+        }
+        f
+    };
 
-async fn set_status_to_current_time(ctx: Arc<Context>) {
-    let current_time = Utc::now();
-    let formatted_time = current_time.to_rfc2822();
+    let list = &[
+        "tokio_util",
+        "h2",
+        "rustls",
+        "serenity",
+        "tungstenite",
+        "async_tungstenite",
+        "hyper",
+        "trust_dns_resolver",
+        "trust_dns_proto",
+        "reqwest",
+        "mio",
+        "want",
+        "kube",
+        "tower",
+    ];
 
-    ctx.set_activity(Activity::playing(&formatted_time)).await;
+    // let filter = EnvFilter::from_default_env();
+    // let filter = append_info(filter.add_directive(Trace), list, "info");
+
+    // tracing_subscriber::FmtSubscriber::builder()
+    //     .with_max_level(Level::Trace)
+    //     .with_env_filter(filter)
+    //     .try_init()
+    //     .unwrap();
+
+    debug!("tracing initialized");
 }
 
 #[tokio::main]
 async fn main() {
+    init_tracing();
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let intents = GatewayIntents::GUILD_MESSAGES
