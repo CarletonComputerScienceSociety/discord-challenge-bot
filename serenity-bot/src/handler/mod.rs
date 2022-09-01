@@ -14,6 +14,8 @@ use strum_macros::{Display, EnumString, IntoStaticStr};
 use tracing::{error, info, trace};
 
 mod interaction;
+mod application_command;
+mod message_component;
 
 pub struct Handler {
     pub database: Arc<DatabaseConnection>,

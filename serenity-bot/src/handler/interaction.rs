@@ -11,109 +11,46 @@ use serenity::prelude::*;
 use std::str::FromStr;
 use tracing::warn;
 
+use super::application_command::ApplicationCommandHandler;
+use super::message_component::MessageComponentHandler;
 use super::{Command, Handler};
 
+pub trait InteractionHandler {
+    fn handle_command(
+        context: Context,
+        command: Command,
+        args: Vec<String>,
+    ) -> Result<(), Box<dyn std::error::Error>>;
+}
+
 impl Handler {
+    /// Handle any incoming interactions. This can either be an application
+    /// command, or a message component being interacted with.
     pub async fn interaction_create(
         &self,
         context: Context,
         interaction: Interaction,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        // Get the slash command, or return if it's not a slash command.
-        let slash_command = if let Some(slash_command) = interaction.application_command() {
-            slash_command
-        } else {
-            return Ok(());
-        };
-
-        if let Err(e) = slash_command.channel_id.to_channel(&context).await {
-            warn!("Error getting channel: {:?}", e);
-        };
-
-        match Command::from_str(&slash_command.data.name[..])? {
-            Command::EventStart => {
-                // Get the event name from the command
-                let event_name = match slash_command
-                    .data
-                    .options
-                    .get(0)
-                    .expect("No event name provided")
-                    .resolved
-                    .as_ref()
-                    .expect("No event name provided")
-                {
-                    CommandDataOptionValue::String(s) => s,
-                    _ => {
-                        warn!("Invalid event name");
-                        return Ok(());
-                    }
-                };
-
-                // Get the guild
-                let guild = context
-                    .http
-                    .get_guild(slash_command.guild_id.unwrap().0)
-                    .await?;
-
-                // Create a category for the event
-                let category = guild
-                    .create_channel(&context.http, |c| {
-                        c.name("event").kind(ChannelType::Category)
-                    })
-                    .await?;
-
-                // Create a text channel for the event
-                let channel = guild
-                    .create_channel(&context.http, |c| {
-                        c.name("event")
-                            .kind(ChannelType::Text)
-                            // Make sure this channel is inside the category we
-                            // just created
-                            .category(category.id)
-                    })
-                    .await?;
-
-                // TODO:
-                // - Store each participant that wants to join
-
-                // Add a button to join the event
-                let join_button = channel
-                    .send_message(&context.http, |m| {
-                        m.content("Join the event").components(|c| {
-                            c.add_action_row(
-                                CreateActionRow::default()
-                                    .add_button(
-                                        CreateButton::default()
-                                            .custom_id(uuid::Uuid::new_v4().simple().to_string())
-                                            .label("Join")
-                                            .style(ButtonStyle::Primary)
-                                            .to_owned(),
-                                    )
-                                    .to_owned(),
-                            )
-                        })
-                    })
-                    .await?;
-
-                // Add the event to the database
-                let event = event::ActiveModel {
-                    discord_server_id: Set(slash_command.guild_id.unwrap().0.to_string()),
-                    discord_category_id: Set(category.id.0.to_string()),
-                    discord_main_channel_id: Set(channel.id.0.to_string()),
-                    discord_event_join_button_id: Set(join_button.id.0.to_string()),
-                    name: Set(event_name.to_string()),
-                    ..Default::default()
-                };
-
-                // Save the event to the database
-                event.insert(self.database.as_ref()).await?;
-
-                // Respond that the event has been created
-                slash_command
-                    .create_interaction_response(&context.http, |r| {
-                        r.interaction_response_data(|d| d.title("Event created!").ephemeral(true))
-                    })
-                    .await?;
+        match interaction {
+            Interaction::ApplicationCommand(application_command) => {
+                ApplicationCommandHandler::handle_command(
+                    context,
+                    application_command,
+                    self.database.clone(),
+                )
+                .await?;
+            }
+            Interaction::MessageComponent(message_component) => {
+                MessageComponentHandler::handle_command(
+                    context,
+                    message_component,
+                    self.database.clone(),
+                )
+                .await?
+            }
+            _ => {
+                warn!("Unhandled interaction type");
+                return Ok(());
             }
         }
 

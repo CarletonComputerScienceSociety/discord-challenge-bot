@@ -73,9 +73,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             database: db_arc.clone(),
             is_loop_running: AtomicBool::new(false),
         })
-        .event_handler(CustomHandler {
-            database: db_arc.clone(),
-        })
+        // .event_handler(CustomHandler {
+        //     database: db_arc.clone(),
+        // })
         .await
         .expect("Error creating client");
 
