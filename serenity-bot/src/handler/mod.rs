@@ -13,8 +13,8 @@ use serenity::prelude::*;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use tracing::{error, info, trace};
 
-mod interaction;
 mod application_command;
+mod interaction;
 mod message_component;
 
 pub struct Handler {

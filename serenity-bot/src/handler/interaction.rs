@@ -1,14 +1,6 @@
-use entity::entities::event;
-use migration::sea_orm::ActiveModelTrait;
-use migration::sea_orm::Set;
-use serenity::builder::CreateActionRow;
-use serenity::builder::CreateButton;
-use serenity::model::prelude::command::CommandOptionType;
-use serenity::model::prelude::component::ButtonStyle;
-use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::{application::interaction::Interaction, prelude::ChannelType};
+use serenity::model::application::interaction::Interaction;
 use serenity::prelude::*;
-use std::str::FromStr;
+
 use tracing::warn;
 
 use super::application_command::ApplicationCommandHandler;

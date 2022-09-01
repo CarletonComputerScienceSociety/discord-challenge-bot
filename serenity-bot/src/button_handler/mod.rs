@@ -1,7 +1,7 @@
 use migration::sea_orm::DatabaseConnection;
 use serenity::{
     async_trait,
-    model::prelude::interaction::{self, Interaction},
+    model::prelude::interaction::Interaction,
     prelude::{Context, EventHandler},
 };
 use std::sync::Arc;
@@ -12,7 +12,7 @@ pub struct CustomHandler {
 
 #[async_trait]
 impl EventHandler for CustomHandler {
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+    async fn interaction_create(&self, _ctx: Context, interaction: Interaction) {
         // Print out the interaction id
 
         if let Interaction::MessageComponent(message) = interaction {

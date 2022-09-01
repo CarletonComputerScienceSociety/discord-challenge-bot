@@ -1,7 +1,6 @@
 use std::env;
 use std::sync::atomic::AtomicBool;
 
-use button_handler::CustomHandler;
 use handler::Handler;
 
 use migration::sea_orm::{Database, DatabaseConnection};

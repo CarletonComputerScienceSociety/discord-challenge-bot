@@ -4,20 +4,17 @@ use migration::sea_orm::DatabaseConnection;
 use migration::sea_orm::Set;
 use serenity::builder::CreateActionRow;
 use serenity::builder::CreateButton;
-use serenity::model::prelude::command::CommandOptionType;
+
 use serenity::model::prelude::component::ButtonStyle;
+use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::interaction::{
-    application_command::ApplicationCommandInteraction, Interaction,
-};
 use serenity::model::prelude::ChannelType;
 use serenity::prelude::Context;
-use serenity::prelude::*;
+
 use std::str::FromStr;
 use std::sync::Arc;
 use tracing::warn;
 
-use super::interaction::InteractionHandler;
 use super::Command;
 
 pub struct ApplicationCommandHandler;
