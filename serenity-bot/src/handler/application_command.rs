@@ -9,6 +9,7 @@ use serenity::builder::CreateButton;
 use serenity::model::prelude::component::ButtonStyle;
 use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
+use serenity::model::prelude::interaction::InteractionResponseType;
 use serenity::model::prelude::ChannelType;
 use serenity::prelude::Context;
 
@@ -118,7 +119,10 @@ impl ApplicationCommandHandler {
                 // Respond that the event has been created
                 application_command_interaction
                     .create_interaction_response(&context.http, |r| {
-                        r.interaction_response_data(|d| d.title("Event created!").ephemeral(true))
+                        r.kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|d| {
+                                d.content("Event created!").ephemeral(true)
+                            })
                     })
                     .await?;
             }

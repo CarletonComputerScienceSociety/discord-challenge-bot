@@ -3,6 +3,7 @@ use std::sync::atomic::AtomicBool;
 
 use handler::Handler;
 
+use log::LevelFilter;
 use migration::sea_orm::{Database, DatabaseConnection};
 use serenity::prelude::*;
 use simple_logger::SimpleLogger;
@@ -14,7 +15,12 @@ mod handler;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .with_module_level("serenity", LevelFilter::Error)
+        .with_module_level("tracing::span", LevelFilter::Error)
+        .init()
+        .unwrap();
 
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
