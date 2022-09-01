@@ -1,11 +1,11 @@
 use std::sync::atomic::AtomicBool;
 
+use migration::sea_orm::DatabaseConnection;
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
 
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
-
 
 use serenity::prelude::*;
 
@@ -15,6 +15,7 @@ use tracing::{error, info, trace};
 mod interaction;
 
 pub struct Handler {
+    pub database: DatabaseConnection,
     pub is_loop_running: AtomicBool,
 }
 

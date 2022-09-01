@@ -3,6 +3,7 @@ use std::sync::atomic::AtomicBool;
 
 use handler::Handler;
 
+use migration::sea_orm::{Database, DatabaseConnection};
 use serenity::prelude::*;
 use tracing::debug;
 
@@ -50,9 +51,12 @@ fn init_tracing() {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_tracing();
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+
+    // Connect to the database
+    let db: DatabaseConnection = Database::connect("sqlite://test.db").await?;
 
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::DIRECT_MESSAGES
@@ -61,6 +65,7 @@ async fn main() {
 
     let mut client = Client::builder(&token, intents)
         .event_handler(Handler {
+            database: db,
             is_loop_running: AtomicBool::new(false),
         })
         .await
@@ -69,4 +74,6 @@ async fn main() {
     if let Err(why) = client.start().await {
         eprintln!("Client error: {:?}", why);
     }
+
+    Ok(())
 }
