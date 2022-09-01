@@ -1,7 +1,7 @@
+use log::warn;
 use serenity::model::application::interaction::Interaction;
 use serenity::prelude::*;
 
-use tracing::warn;
 
 use super::application_command::ApplicationCommandHandler;
 use super::message_component::MessageComponentHandler;

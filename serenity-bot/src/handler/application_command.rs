@@ -1,4 +1,5 @@
 use entity::entities::event;
+use log::warn;
 use migration::sea_orm::ActiveModelTrait;
 use migration::sea_orm::DatabaseConnection;
 use migration::sea_orm::Set;
@@ -13,7 +14,6 @@ use serenity::prelude::Context;
 
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::warn;
 
 use super::Command;
 

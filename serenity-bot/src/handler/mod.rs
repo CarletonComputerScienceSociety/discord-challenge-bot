@@ -1,5 +1,6 @@
 use std::sync::atomic::AtomicBool;
 
+use log::{error, info, trace};
 use migration::sea_orm::DatabaseConnection;
 use serenity::model::application::interaction::Interaction;
 use serenity::{async_trait, model::prelude::command::CommandOptionType};
@@ -11,7 +12,6 @@ use std::sync::Arc;
 use serenity::prelude::*;
 
 use strum_macros::{Display, EnumString, IntoStaticStr};
-use tracing::{error, info, trace};
 
 mod application_command;
 mod interaction;
@@ -34,13 +34,13 @@ pub enum Command {
 impl EventHandler for Handler {
     async fn interaction_create(&self, context: Context, interaction: Interaction) {
         if let Err(e) = self.interaction_create(context, interaction).await {
-            error!(?e, "Error while processing message");
+            error!("Error handling interaction: {:?}", e);
         }
     }
 
     async fn ready(&self, context: Context, ready: Ready) {
         let name = ready.user.name;
-        info!(?name, "is connected!");
+        info!("{} is connected!", name);
 
         if let Err(e) = GuildId(VELOREN_SERVER_ID)
             .set_application_commands(&context.http, |commands| {
@@ -61,7 +61,7 @@ impl EventHandler for Handler {
             })
             .await
         {
-            error!(?e, "Error while creating the review command");
+            error!("Error setting application commands: {:?}", e);
         }
     }
 

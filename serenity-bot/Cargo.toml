@@ -15,8 +15,8 @@ migration = { path = "../migration" }
 chrono = "0.4.22"
 sys-info = "^0"
 
-tracing = "0.1"
-tracing-subscriber = "0.3.15"
+log = "0.4.17"
+simple_logger = "2.3.0"
 
 strum_macros = "0.24.3"
 strum = "0.24.1"
