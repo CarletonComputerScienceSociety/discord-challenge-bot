@@ -1,19 +1,19 @@
-use std::env;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::time::Duration;
 
-use chrono::offset::Utc;
-use serenity::async_trait;
+
+
+
+
+
+
 use serenity::model::application::interaction::Interaction;
-use serenity::model::channel::Message;
-use serenity::model::gateway::{Activity, Ready};
-use serenity::model::id::{ChannelId, GuildId};
-use serenity::model::prelude::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::interaction::InteractionResponseType;
+
+
+
+
+
+
 use serenity::prelude::*;
-use serenity::utils::MessageBuilder;
+
 use tracing::warn;
 
 use super::Handler;
@@ -41,7 +41,7 @@ impl Handler {
 
         match &slash_command.data.name[..] {
             REVIEW_STRING => {
-                let merge_request_number = slash_command
+                let _merge_request_number = slash_command
                     .data
                     .options
                     .get(0)
@@ -51,7 +51,7 @@ impl Handler {
                     .expect("Expected int object");
             }
             APPROVE_STRING => {
-                let merge_request_number = slash_command
+                let _merge_request_number = slash_command
                     .data
                     .options
                     .get(0)

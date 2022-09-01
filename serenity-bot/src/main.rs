@@ -1,17 +1,17 @@
 use std::env;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::time::Duration;
+use std::sync::atomic::{AtomicBool};
 
-use chrono::offset::Utc;
+
+
+
 use handler::Handler;
-use serenity::async_trait;
-use serenity::model::channel::Message;
-use serenity::model::gateway::{Activity, Ready};
-use serenity::model::id::{ChannelId, GuildId};
+
+
+
+
 use serenity::prelude::*;
 use tracing::debug;
-use tracing::log::Level;
+
 use tracing_subscriber::EnvFilter;
 
 mod handler;
@@ -19,14 +19,14 @@ mod handler;
 const LABBOT_ID: u64 = 451862707746897961;
 
 fn init_tracing() {
-    let append_info = |mut f: EnvFilter, list: &[&str], level: &str| {
+    let _append_info = |mut f: EnvFilter, list: &[&str], level: &str| {
         for l in list {
             f = f.add_directive(format!("{}={}", l, level).parse().unwrap());
         }
         f
     };
 
-    let list = &[
+    let _list = &[
         "tokio_util",
         "h2",
         "rustls",

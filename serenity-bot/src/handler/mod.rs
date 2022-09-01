@@ -1,17 +1,15 @@
-use std::env;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::time::Duration;
 
-use chrono::offset::Utc;
+use std::sync::atomic::{AtomicBool};
+
+
+
+
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
-use serenity::model::channel::Message;
-use serenity::model::gateway::{Activity, Ready};
-use serenity::model::id::{ChannelId, GuildId};
-use serenity::model::prelude::application_command::{
-    ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType,
-};
+
+use serenity::model::gateway::{Ready};
+use serenity::model::id::{GuildId};
+
 use serenity::model::prelude::command::CommandOptionType;
 use serenity::prelude::*;
 use tracing::{error, info, trace};
@@ -102,7 +100,7 @@ impl EventHandler for Handler {
 
     // This mostly came from the Serenity docs
     // https://github.com/serenity-rs/serenity/blob/current/examples/e13_parallel_loops/src/main.rs
-    async fn cache_ready(&self, context: Context, _guilds: Vec<GuildId>) {
+    async fn cache_ready(&self, _context: Context, _guilds: Vec<GuildId>) {
         trace!("Cache built successfully!");
     }
 }
