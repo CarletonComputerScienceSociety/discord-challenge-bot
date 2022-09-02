@@ -34,10 +34,6 @@ impl MessageComponentHandler {
             }
         };
 
-        // If it's a join button, check if the user is already in the event
-
-        // If not, add them to this event
-
         Ok(())
     }
 

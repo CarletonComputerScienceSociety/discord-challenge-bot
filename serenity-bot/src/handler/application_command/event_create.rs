@@ -24,7 +24,7 @@ use super::Command;
 
 pub struct ApplicationCommandHandler;
 
-pub async fn handle_event_start_command(
+pub async fn handle_event_create_command(
     application_command_interaction: ApplicationCommandInteraction,
     context: Context,
     database: Arc<DatabaseConnection>,

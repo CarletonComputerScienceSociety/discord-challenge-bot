@@ -1,9 +1,10 @@
+use self::{event_create::handle_event_create_command, event_start::handle_event_start_command};
+use super::Command;
 use entity::entities::event;
 use log::warn;
 use migration::sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
-use serenity::builder::{CreateActionRow, CreateButton};
-
 use serenity::{
+    builder::{CreateActionRow, CreateButton},
     model::prelude::{
         component::ButtonStyle,
         interaction::{
@@ -14,13 +15,9 @@ use serenity::{
     },
     prelude::Context,
 };
-
 use std::{str::FromStr, sync::Arc};
 
-use self::event_start::handle_event_start_command;
-
-use super::Command;
-
+mod event_create;
 mod event_start;
 
 pub struct ApplicationCommandHandler;
@@ -40,6 +37,10 @@ impl ApplicationCommandHandler {
         };
 
         match Command::from_str(&application_command_interaction.data.name[..])? {
+            Command::EventCreate => {
+                handle_event_create_command(application_command_interaction, context, database)
+                    .await?;
+            }
             Command::EventStart => {
                 handle_event_start_command(application_command_interaction, context, database)
                     .await?;

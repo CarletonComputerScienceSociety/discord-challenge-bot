@@ -23,7 +23,9 @@ pub const VELOREN_SERVER_ID: u64 = 345993194322001923;
 
 #[derive(IntoStaticStr, EnumString, Display)]
 pub enum Command {
-    #[strum(serialize = "event-start")]
+    #[strum(serialize = "event create")]
+    EventCreate,
+    #[strum(serialize = "event start")]
     EventStart,
 }
 
@@ -41,20 +43,47 @@ impl EventHandler for Handler {
 
         if let Err(e) = GuildId(VELOREN_SERVER_ID)
             .set_application_commands(&context.http, |commands| {
-                // Start event command
-                commands.create_application_command(|command| {
-                    command
-                        .name(Command::EventStart)
-                        .description("Start a challenge event")
-                        .create_option(|option| {
-                            // Option to get name of event
-                            option
-                                .name("event-start")
-                                .description("Start a challenge event")
-                                .kind(CommandOptionType::String)
-                                .required(true)
-                        })
-                })
+                // Create event command
+                // Takes a string name of the event
+                commands
+                    .create_application_command(|command| {
+                        command
+                            .name(Command::EventCreate)
+                            .description("Create a challenge event")
+                            .create_option(|option| {
+                                // Option to get name of event
+                                option
+                                    .name("challenge_name")
+                                    .description("Challenge name")
+                                    .kind(CommandOptionType::String)
+                                    .required(true)
+                            })
+                    })
+                    // Start event command
+                    // Takes a required number of people per team
+                    .create_application_command(|command| {
+                        command
+                            .name(Command::EventStart)
+                            .description("Start a challenge event")
+                            .create_option(|option| {
+                                // Option to get name of event
+                                option
+                                    .name("team_members")
+                                    .description("Number of people per team")
+                                    .kind(CommandOptionType::Integer)
+                                    .required(true)
+                            })
+                            .create_option(|option| {
+                                // Option to get name of event
+                                option
+                                    .name("challenge_name")
+                                    .description("Challenge name")
+                                    .kind(CommandOptionType::String)
+                                    .required(true)
+                            })
+                    })
+                // Clean event command
+                // Takes a name of the event to clean up
             })
             .await
         {
