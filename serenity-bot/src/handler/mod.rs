@@ -1,19 +1,15 @@
-use std::sync::atomic::AtomicBool;
-
 use log::{error, info, trace};
 use migration::sea_orm::DatabaseConnection;
 use serenity::{
     async_trait,
-    model::{application::interaction::Interaction, prelude::command::CommandOptionType},
+    model::{
+        application::interaction::Interaction, gateway::Ready, id::GuildId,
+        prelude::command::CommandOptionType,
+    },
+    prelude::*,
 };
-
-use serenity::model::{gateway::Ready, id::GuildId};
-use std::sync::Arc;
-
-use serenity::prelude::*;
-
+use std::sync::{atomic::AtomicBool, Arc};
 use strum_macros::{Display, EnumString, IntoStaticStr};
-
 mod application_command;
 mod interaction;
 mod message_component;
