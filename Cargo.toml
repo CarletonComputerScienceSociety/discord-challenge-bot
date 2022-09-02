@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "entity",
+    "db-entity",
     "migration",
     "serenity-bot",
 ]

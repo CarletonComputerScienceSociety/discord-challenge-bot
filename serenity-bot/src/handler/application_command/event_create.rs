@@ -1,7 +1,7 @@
-use entity::entities::event;
+use db_entity::entities::event;
 use log::warn;
 use migration::sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
-use serde::{Deserialize, Serialize};
+
 use serenity::builder::{CreateActionRow, CreateButton};
 
 use serenity::{
@@ -16,11 +16,9 @@ use serenity::{
     prelude::Context,
 };
 
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use crate::handler::interaction::InteractionCustomId;
-
-use super::Command;
 
 pub struct ApplicationCommandHandler;
 
@@ -29,6 +27,7 @@ pub async fn handle_event_create_command(
     context: Context,
     database: Arc<DatabaseConnection>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    // Get the name parameter
     let event_name = match application_command_interaction
         .data
         .options

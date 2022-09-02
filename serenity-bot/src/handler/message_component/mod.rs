@@ -1,5 +1,5 @@
 use super::interaction::InteractionCustomId;
-use entity::entities::{participant, participant::Entity as ParticipantEntity};
+use db_entity::entities::{participant, participant::Entity as ParticipantEntity};
 use migration::{
     sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set},
     Condition,
@@ -79,7 +79,7 @@ impl MessageComponentHandler {
         };
 
         // Insert the participant into the database
-        let participant: participant::Model = participant.insert(self.database.as_ref()).await?;
+        let _participant: participant::Model = participant.insert(self.database.as_ref()).await?;
 
         // Notify the user that they have joined the event
         self.message_component_interaction

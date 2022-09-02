@@ -1,18 +1,10 @@
 use self::{event_create::handle_event_create_command, event_start::handle_event_start_command};
 use super::Command;
-use entity::entities::event;
+
 use log::warn;
-use migration::sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
+use migration::sea_orm::DatabaseConnection;
 use serenity::{
-    builder::{CreateActionRow, CreateButton},
-    model::prelude::{
-        component::ButtonStyle,
-        interaction::{
-            application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-            InteractionResponseType,
-        },
-        ChannelType,
-    },
+    model::prelude::interaction::application_command::ApplicationCommandInteraction,
     prelude::Context,
 };
 use std::{str::FromStr, sync::Arc};

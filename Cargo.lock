@@ -509,6 +509,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "db-entity"
+version = "0.1.0"
+dependencies = [
+ "sea-orm",
+ "serde",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -567,14 +575,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9852635589dc9f9ea1b6fe9f05b50ef208c85c834a562f0c6abb1c475736ec2b"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "entity"
-version = "0.1.0"
-dependencies = [
- "sea-orm",
- "serde",
 ]
 
 [[package]]
@@ -1881,8 +1881,8 @@ name = "serenity-bot"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "db-entity",
  "dotenv",
- "entity",
  "log",
  "migration",
  "serde",

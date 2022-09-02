@@ -1,13 +1,12 @@
-use std::{env, sync::atomic::AtomicBool};
-
 use handler::Handler;
-
 use log::LevelFilter;
 use migration::sea_orm::{Database, DatabaseConnection};
 use serenity::prelude::*;
 use simple_logger::SimpleLogger;
-
-use std::sync::Arc;
+use std::{
+    env,
+    sync::{atomic::AtomicBool, Arc},
+};
 
 mod button_handler;
 mod handler;

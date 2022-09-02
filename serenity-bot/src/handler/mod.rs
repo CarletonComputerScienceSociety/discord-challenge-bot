@@ -23,9 +23,9 @@ pub const VELOREN_SERVER_ID: u64 = 345993194322001923;
 
 #[derive(IntoStaticStr, EnumString, Display)]
 pub enum Command {
-    #[strum(serialize = "event create")]
+    #[strum(serialize = "event-create")]
     EventCreate,
-    #[strum(serialize = "event start")]
+    #[strum(serialize = "event-start")]
     EventStart,
 }
 
