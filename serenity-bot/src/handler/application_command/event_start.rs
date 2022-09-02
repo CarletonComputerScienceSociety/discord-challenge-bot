@@ -1,7 +1,11 @@
 use crate::handler::interaction::InteractionCustomId;
-use db_entity::entities::{event, event::Entity as EventEntity};
+use db_entity::entities::{
+    event, event::Entity as EventEntity, participant, participant::Entity as ParticipantEntity,
+};
 use log::warn;
 use migration::{sea_orm::*, Condition};
+use rand::seq::SliceRandom;
+use rnglib::{Language, RNG};
 use serenity::{
     model::{
         application::interaction::InteractionResponseType,
@@ -50,44 +54,112 @@ pub async fn handle_event_start_command(
         }
     };
 
-    // // Make sure the event name exists in this server
-    // if EventEntity::find()
-    //     .filter(
-    //         Condition::all()
-    //             .add(event::Column::Name.contains(&event_name))
-    //             .add(
-    //                 event::Column::DiscordId
-    //                     .contains(&self.message_component_interaction.user.id.0.to_string()),
-    //             ),
-    //     )
-    //     .all(self.database.as_ref())
-    //     .await?
-    //     .len()
-    //     > 0
-    // {
-    //     // Notify the user that they're already in the event
-    //     self.message_component_interaction
-    //         .create_interaction_response(&self.context.http, |r| {
-    //             r.kind(InteractionResponseType::ChannelMessageWithSource)
-    //                 .interaction_response_data(|d| {
-    //                     d.content("You already joined this event!").ephemeral(true)
-    //                 })
-    //         })
-    //         .await?;
+    // TODO: Make sure that the user has perms to do this
 
-    //     return Ok(());
-    // }
-
-    // Get all the participants
-    // Randomize them into teams
-
-    // Respond to the interaction
-    application_command_interaction
-        .create_interaction_response(&context.http, |r| {
-            r.kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|d| d.content("Event created!").ephemeral(true))
-        })
+    // Make sure the event name exists in this server
+    let events = EventEntity::find()
+        .filter(
+            Condition::all()
+                .add(event::Column::Name.contains(&event_name))
+                .add(
+                    event::Column::DiscordServerId.contains(
+                        &application_command_interaction
+                            .guild_id
+                            .unwrap()
+                            .0
+                            .to_string(),
+                    ),
+                ),
+        )
+        .all(database.as_ref())
         .await?;
+
+    match events.len() {
+        // TODO: Make sure only one event with a name can be created
+        0 => {
+            // Notify the user that there is no event by this name in this server
+            application_command_interaction
+                .create_interaction_response(context.http, |r| {
+                    r.kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|d| {
+                            d.content("That event doesn't exist on this server!")
+                                .ephemeral(true)
+                        })
+                })
+                .await?;
+        }
+        1 => {
+            // Get all the participants
+            let mut participants = ParticipantEntity::find()
+                .filter(
+                    Condition::all()
+                        .add(event::Column::Name.contains(&event_name))
+                        .add(
+                            event::Column::DiscordServerId.contains(
+                                &application_command_interaction
+                                    .guild_id
+                                    .unwrap()
+                                    .0
+                                    .to_string(),
+                            ),
+                        ),
+                )
+                .all(database.as_ref())
+                .await?;
+
+            let number_of_participants = participants.len();
+            let number_of_teams = *team_count as usize;
+
+            let number_of_participants_per_team = number_of_participants / number_of_teams;
+
+            // Randomize them into teams with random names
+            participants.shuffle(&mut rand::thread_rng());
+
+            // Seed the team name generator
+            let rng = RNG::new(&Language::Fantasy).unwrap();
+
+            for team_number in 0..number_of_teams {
+                let mut team_participants = Vec::new();
+                for participant_number in 0..number_of_participants_per_team {
+                    team_participants.push(participants.remove(0));
+                }
+
+                let team_name = format!("Team {}", rng.generate_name());
+                
+                // Create roles for each team
+                let team_role = application_command_interaction
+                    .guild_id
+                    .unwrap()
+                    .create_role(&context.http, |r| r.name(&team_name))
+                    .await?;
+
+                // Create channels for each team
+                let team = EventEntity::new(
+                    &event_name,
+                    &application_command_interaction
+                        .guild_id
+                        .unwrap()
+                        .0
+                        .to_string(),
+                    &team_name,
+                );
+                let team = team.insert(database.as_ref()).await?;
+                for participant in team_participants {
+                    participant.event_id = Some(team.id);
+                    participant.update(database.as_ref()).await?;
+                }
+            }
+
+            // Respond to the interaction
+            application_command_interaction
+                .create_interaction_response(&context.http, |r| {
+                    r.kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|d| d.content("Event started!").ephemeral(true))
+                })
+                .await?;
+        }
+        _ => unreachable!(),
+    }
 
     Ok(())
 }

@@ -19,6 +19,8 @@ enum Team {
     Id,
     DiscordChannelId,
     EventId,
+    TeamChannelId,
+    TeamRoleId,
 }
 
 #[derive(Iden)]
@@ -86,6 +88,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Team::DiscordChannelId).string().not_null())
                     .col(ColumnDef::new(Team::EventId).integer().not_null())
+                    .col(ColumnDef::new(Team::TeamChannelId).string().not_null())
+                    .col(ColumnDef::new(Team::TeamRoleId).string().not_null())
                     // Create a foreign key to from team to event
                     .foreign_key(
                         ForeignKey::create()
