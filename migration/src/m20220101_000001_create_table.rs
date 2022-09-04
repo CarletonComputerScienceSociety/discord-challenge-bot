@@ -117,8 +117,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Participant::DiscordId).string().not_null())
-                    .col(ColumnDef::new(Participant::TeamId).string())
-                    .col(ColumnDef::new(Participant::EventId).string().not_null())
+                    .col(ColumnDef::new(Participant::TeamId).integer().not_null())
+                    .col(ColumnDef::new(Participant::EventId).integer().not_null())
                     // Create a foreign key to from participant to team
                     .foreign_key(
                         ForeignKey::create()
@@ -161,7 +161,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(Submission::ParticipantId)
-                            .string()
+                            .integer()
                             .not_null(),
                     )
                     // Create a foreign key to from submission to participant

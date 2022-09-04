@@ -56,6 +56,34 @@ pub async fn handle_event_start_command(
     };
 
     // TODO: Make sure that the user has perms to do this
+    
+    // Get all the events and print them
+    let events = EventEntity::find()
+        .all(database.as_ref())
+        .await?;
+
+    for event in events {
+        println!("{:?}", event);
+    }
+
+    // Print the query
+    let query = EventEntity::find()
+        .filter(
+            Condition::all()
+                .add(event::Column::Name.contains(&event_name))
+                // .add(
+                //     event::Column::DiscordServerId.contains(
+                //         &application_command_interaction
+                //             .guild_id
+                //             .unwrap()
+                //             .0
+                //             .to_string(),
+                //     ),
+                // ),
+        )
+        .build(DbBackend::Sqlite).to_string();
+
+    println!("{}", query);
 
     // Make sure the event name exists in this server
     let events = EventEntity::find()
@@ -90,6 +118,8 @@ pub async fn handle_event_start_command(
                 .await?;
         }
         1 => {
+            let event = events.get(0).unwrap();
+
             // Get all the participants
             let mut participants = ParticipantEntity::find()
                 .filter(
@@ -118,12 +148,13 @@ pub async fn handle_event_start_command(
 
             // Seed the team name generator
             let rng = RNG::new(&Language::Fantasy).unwrap();
-            
+
             let mut teams = Vec::new();
 
             for team_number in 0..number_of_teams {
                 let mut team_participants = Vec::new();
-                for participant_number in 0..number_of_participants_per_team {
+
+                for _ in 0..number_of_participants_per_team {
                     team_participants.push(participants.remove(0));
                 }
 
@@ -137,35 +168,37 @@ pub async fn handle_event_start_command(
                     .await?;
 
                 // Create channels for each team
-                let team = EventEntity::new(
-                    &event_name,
-                    &application_command_interaction
-                        .guild_id
-                        .unwrap()
-                        .0
-                        .to_string(),
-                    &team_name,
-                );
-                let team = team.insert(database.as_ref()).await?;
-                for participant in team_participants {
-                    participant.event_id = Some(team.id);
-                    participant.update(database.as_ref()).await?;
-                }
+                let team_channel = application_command_interaction
+                    .guild_id
+                    .unwrap()
+                    .create_channel(&context.http, |c| {
+                        c.name(&team_name)
+                            .kind(serenity::model::channel::ChannelType::Text)
+                            .category(event.discord_category_id.parse::<u64>().unwrap())
+                    })
+                    .await?;
 
                 // Create the event for the database
                 teams.push(team::ActiveModel {
-                    id: todo!(),
-                    discord_channel_id: todo!(),
-                    event_id: todo!(),
-                    team_channel_id: todo!(),
-                    team_role_id: todo!(),
+                    discord_channel_id: Set(team_channel.id.0.to_string()),
+                    event_id: Set(event.id),
+                    team_channel_id: Set(team_channel.id.0.to_string()),
+                    team_role_id: Set(team_role.id.0.to_string()),
+                    ..Default::default()
                 });
-                ..Default::default()
-                
+
                 // TODO: Add each participant to this team
+                for participant in team_participants {
+                    let mut participant: participant::ActiveModel = participant.into();
+                    participant.team_id = Set(Some(team_number.to_string()));
+                    participant.update(database.as_ref()).await?;
+                }
             }
 
-            // TODO: Add the teams to the database
+            // Add the teams to the database
+            TeamEntity::insert_many(teams)
+                .exec(database.as_ref())
+                .await?;
 
             // Respond to the interaction
             application_command_interaction
