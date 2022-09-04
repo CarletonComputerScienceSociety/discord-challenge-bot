@@ -1,6 +1,7 @@
 use crate::handler::interaction::InteractionCustomId;
 use db_entity::entities::{
     event, event::Entity as EventEntity, participant, participant::Entity as ParticipantEntity,
+    team, team::Entity as TeamEntity,
 };
 use log::warn;
 use migration::{sea_orm::*, Condition};
@@ -117,6 +118,8 @@ pub async fn handle_event_start_command(
 
             // Seed the team name generator
             let rng = RNG::new(&Language::Fantasy).unwrap();
+            
+            let mut teams = Vec::new();
 
             for team_number in 0..number_of_teams {
                 let mut team_participants = Vec::new();
@@ -125,7 +128,7 @@ pub async fn handle_event_start_command(
                 }
 
                 let team_name = format!("Team {}", rng.generate_name());
-                
+
                 // Create roles for each team
                 let team_role = application_command_interaction
                     .guild_id
@@ -148,7 +151,21 @@ pub async fn handle_event_start_command(
                     participant.event_id = Some(team.id);
                     participant.update(database.as_ref()).await?;
                 }
+
+                // Create the event for the database
+                teams.push(team::ActiveModel {
+                    id: todo!(),
+                    discord_channel_id: todo!(),
+                    event_id: todo!(),
+                    team_channel_id: todo!(),
+                    team_role_id: todo!(),
+                });
+                ..Default::default()
+                
+                // TODO: Add each participant to this team
             }
+
+            // TODO: Add the teams to the database
 
             // Respond to the interaction
             application_command_interaction
