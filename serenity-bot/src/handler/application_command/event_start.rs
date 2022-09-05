@@ -56,34 +56,13 @@ pub async fn handle_event_start_command(
     };
 
     // TODO: Make sure that the user has perms to do this
-    
+
     // Get all the events and print them
-    let events = EventEntity::find()
-        .all(database.as_ref())
-        .await?;
+    let events = EventEntity::find().all(database.as_ref()).await?;
 
     for event in events {
         println!("{:?}", event);
     }
-
-    // Print the query
-    let query = EventEntity::find()
-        .filter(
-            Condition::all()
-                .add(event::Column::Name.contains(&event_name))
-                // .add(
-                //     event::Column::DiscordServerId.contains(
-                //         &application_command_interaction
-                //             .guild_id
-                //             .unwrap()
-                //             .0
-                //             .to_string(),
-                //     ),
-                // ),
-        )
-        .build(DbBackend::Sqlite).to_string();
-
-    println!("{}", query);
 
     // Make sure the event name exists in this server
     let events = EventEntity::find()
@@ -91,13 +70,8 @@ pub async fn handle_event_start_command(
             Condition::all()
                 .add(event::Column::Name.contains(&event_name))
                 .add(
-                    event::Column::DiscordServerId.contains(
-                        &application_command_interaction
-                            .guild_id
-                            .unwrap()
-                            .0
-                            .to_string(),
-                    ),
+                    event::Column::DiscordServerId
+                        .eq(application_command_interaction.guild_id.unwrap().0),
                 ),
         )
         .all(database.as_ref())
@@ -122,26 +96,14 @@ pub async fn handle_event_start_command(
 
             // Get all the participants
             let mut participants = ParticipantEntity::find()
-                .filter(
-                    Condition::all()
-                        .add(event::Column::Name.contains(&event_name))
-                        .add(
-                            event::Column::DiscordServerId.contains(
-                                &application_command_interaction
-                                    .guild_id
-                                    .unwrap()
-                                    .0
-                                    .to_string(),
-                            ),
-                        ),
-                )
+                .filter(participant::Column::EventId.eq(event.id))
                 .all(database.as_ref())
                 .await?;
 
             let number_of_participants = participants.len();
             let number_of_teams = *team_count as usize;
 
-            let number_of_participants_per_team = number_of_participants / number_of_teams;
+            let number_of_participants_per_team = 0; //number_of_participants / number_of_teams;
 
             // Randomize them into teams with random names
             participants.shuffle(&mut rand::thread_rng());
@@ -149,9 +111,7 @@ pub async fn handle_event_start_command(
             // Seed the team name generator
             let rng = RNG::new(&Language::Fantasy).unwrap();
 
-            let mut teams = Vec::new();
-
-            for team_number in 0..number_of_teams {
+            for team_number in 0..number_of_teams + 100 {
                 let mut team_participants = Vec::new();
 
                 for _ in 0..number_of_participants_per_team {
@@ -174,31 +134,32 @@ pub async fn handle_event_start_command(
                     .create_channel(&context.http, |c| {
                         c.name(&team_name)
                             .kind(serenity::model::channel::ChannelType::Text)
-                            .category(event.discord_category_id.parse::<u64>().unwrap())
+                            .category(event.discord_category_id as u64)
                     })
                     .await?;
 
                 // Create the event for the database
-                teams.push(team::ActiveModel {
-                    discord_channel_id: Set(team_channel.id.0.to_string()),
+                let team = team::ActiveModel {
+                    discord_channel_id: Set(team_channel.id.0 as i64),
                     event_id: Set(event.id),
-                    team_channel_id: Set(team_channel.id.0.to_string()),
-                    team_role_id: Set(team_role.id.0.to_string()),
+                    team_channel_id: Set(team_channel.id.0 as i64),
+                    team_role_id: Set(team_role.id.0 as i64),
                     ..Default::default()
-                });
+                };
+
+                // Add the team to the database
+                let team = team
+                    .insert(database.as_ref())
+                    .await
+                    .expect("Failed to insert team");
 
                 // TODO: Add each participant to this team
                 for participant in team_participants {
                     let mut participant: participant::ActiveModel = participant.into();
-                    participant.team_id = Set(Some(team_number.to_string()));
+                    participant.team_id = Set(team.id);
                     participant.update(database.as_ref()).await?;
                 }
             }
-
-            // Add the teams to the database
-            TeamEntity::insert_many(teams)
-                .exec(database.as_ref())
-                .await?;
 
             // Respond to the interaction
             application_command_interaction

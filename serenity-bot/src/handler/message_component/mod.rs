@@ -41,16 +41,16 @@ impl MessageComponentHandler {
     /// already part of this event, it should return an error.
     pub async fn handle_join_button(
         &self,
-        event_id: u64,
+        event_id: i32,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Make sure this participany isn't already in the event
         if ParticipantEntity::find()
             .filter(
                 Condition::all()
-                    .add(participant::Column::EventId.contains(&event_id.to_string()))
+                    .add(participant::Column::EventId.eq(event_id))
                     .add(
                         participant::Column::DiscordId
-                            .contains(&self.message_component_interaction.user.id.0.to_string()),
+                            .eq(self.message_component_interaction.user.id.0),
                     ),
             )
             .all(self.database.as_ref())
@@ -73,8 +73,8 @@ impl MessageComponentHandler {
 
         // Create a new participant for the event
         let participant = participant::ActiveModel {
-            event_id: Set(event_id.to_string()),
-            discord_id: Set(self.message_component_interaction.user.id.to_string()),
+            event_id: Set(event_id),
+            discord_id: Set(self.message_component_interaction.user.id.0 as i64),
             ..Default::default()
         };
 

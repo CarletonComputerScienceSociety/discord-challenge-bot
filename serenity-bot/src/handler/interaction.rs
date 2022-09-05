@@ -17,7 +17,7 @@ pub trait InteractionHandler {
 
 #[derive(Serialize, Deserialize)]
 pub enum InteractionCustomId {
-    StartEvent { event_id: u64 },
+    StartEvent { event_id: i32 },
 }
 
 impl Handler {

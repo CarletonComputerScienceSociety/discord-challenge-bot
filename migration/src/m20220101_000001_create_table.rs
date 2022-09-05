@@ -61,11 +61,19 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Event::DiscordServerId).string().not_null())
-                    .col(ColumnDef::new(Event::DiscordCategoryId).string().not_null())
+                    .col(
+                        ColumnDef::new(Event::DiscordServerId)
+                            .big_integer()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(Event::DiscordCategoryId)
+                            .big_integer()
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(Event::DiscordMainChannelId)
-                            .string()
+                            .big_integer()
                             .not_null(),
                     )
                     .col(ColumnDef::new(Event::Name).string().not_null())
@@ -86,10 +94,14 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Team::DiscordChannelId).string().not_null())
+                    .col(
+                        ColumnDef::new(Team::DiscordChannelId)
+                            .big_integer()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Team::EventId).integer().not_null())
-                    .col(ColumnDef::new(Team::TeamChannelId).string().not_null())
-                    .col(ColumnDef::new(Team::TeamRoleId).string().not_null())
+                    .col(ColumnDef::new(Team::TeamChannelId).big_integer().not_null())
+                    .col(ColumnDef::new(Team::TeamRoleId).big_integer().not_null())
                     // Create a foreign key to from team to event
                     .foreign_key(
                         ForeignKey::create()
@@ -116,7 +128,11 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Participant::DiscordId).string().not_null())
+                    .col(
+                        ColumnDef::new(Participant::DiscordId)
+                            .big_integer()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Participant::TeamId).integer().not_null())
                     .col(ColumnDef::new(Participant::EventId).integer().not_null())
                     // Create a foreign key to from participant to team

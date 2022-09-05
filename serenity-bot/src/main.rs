@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     // Connect to the database
-    let db: DatabaseConnection = Database::connect("sqlite://test.db").await?;
+    let db: DatabaseConnection = Database::connect("postgres://postgres:postgres@localhost:5432/postgres").await?;
 
     let db_arc: Arc<DatabaseConnection> = Arc::new(db);
 

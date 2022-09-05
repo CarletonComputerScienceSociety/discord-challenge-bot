@@ -27,6 +27,7 @@ pub async fn handle_event_create_command(
     context: Context,
     database: Arc<DatabaseConnection>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Creating event");
     // Get the name parameter
     let event_name = match application_command_interaction
         .data
@@ -69,13 +70,9 @@ pub async fn handle_event_create_command(
 
     // Create the event for the database
     let event = event::ActiveModel {
-        discord_server_id: Set(application_command_interaction
-            .guild_id
-            .unwrap()
-            .0
-            .to_string()),
-        discord_category_id: Set(category.id.0.to_string()),
-        discord_main_channel_id: Set(channel.id.0.to_string()),
+        discord_server_id: Set(application_command_interaction.guild_id.unwrap().0 as i64),
+        discord_category_id: Set(category.id.0 as i64),
+        discord_main_channel_id: Set(channel.id.0 as i64),
         name: Set(event_name.to_string()),
         ..Default::default()
     };
@@ -93,7 +90,7 @@ pub async fn handle_event_create_command(
                             CreateButton::default()
                                 .custom_id(
                                     serde_json::to_string(&InteractionCustomId::StartEvent {
-                                        event_id: event.id as u64,
+                                        event_id: event.id,
                                     })
                                     .unwrap(),
                                 )

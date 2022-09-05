@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub discord_server_id: String,
-    pub discord_category_id: String,
-    pub discord_main_channel_id: String,
+    pub discord_server_id: i64,
+    pub discord_category_id: i64,
+    pub discord_main_channel_id: i64,
     pub name: String,
 }
 
